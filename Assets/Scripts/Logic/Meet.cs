@@ -79,6 +79,7 @@ namespace Moba.Logic
         //DoTick 处理tick，将对演示状态进行一定修正，所有的碰撞都在此处发生响应
         public void DoNetTick(WarPb.Tick tick)
         {
+            Debug.Log("tickIndex : " + tick.Index.ToString() + "...netTickIndex : " + netTickIndex);
 
             if (tick.Index <= netTickIndex)             //NOTE: 收到的重复帧，直接丢弃
                 return;
@@ -92,23 +93,33 @@ namespace Moba.Logic
             netTickIndex++;
             //NOTE: 此处要处理 NetTick 与 LocalTick 相同的情况，此情况下 shotUpdated 为false
             DoTick(tick);
+
+            while (laterTicks.Count > 0)
+            {
+                if (laterTicks[0].Index > (netTickIndex + 1))
+                    break;
+
+                netTickIndex++;
+                DoTick(laterTicks[0]);
+                laterTicks.RemoveAt(0);
+            }
         }
 
         //DoLocalTick 响应本地tick，融合修正 
         public void DoLocalTick(WarPb.Tick tick)
         {
-            //Debug.Log("DoLocalTick");
-            if (shotUpdated)        //NOTE: 如果状态更新了，重新计算
-            {
-                shotUpdated = false;
-                List<ItemInfo> curShot = new List<ItemInfo>();
-                Snapshot(curShot);          //NOTE: 将当前状态保存各快照
-                //NOTE: 此处从shot 开始快速演示到上一tick，并且根据传入tick的方向做修正
-                QuickPlay();
-            }
-            //else
-            DoTick(tick);
-            InsertToList(localTicks, tick);
+            ////Debug.Log("DoLocalTick");
+            //if (shotUpdated)        //NOTE: 如果状态更新了，重新计算
+            //{
+            //    shotUpdated = false;
+            //    List<ItemInfo> curShot = new List<ItemInfo>();
+            //    Snapshot(curShot);          //NOTE: 将当前状态保存各快照
+            //    //NOTE: 此处从shot 开始快速演示到上一tick，并且根据传入tick的方向做修正
+            //    QuickPlay();
+            //}
+            ////else
+            //DoTick(tick);
+            //InsertToList(localTicks, tick);
         }
 
         private GameObject GetPrefab(int id)
@@ -184,6 +195,10 @@ namespace Moba.Logic
                     }
                 }
             }
+            //foreach (var tm in m_Tanks)
+            //{
+            //    tm.Do(0.06f);
+            //}
         }
 
         //Fixed 每次Fixed 调用一次，使用这个方法调用而不是使用Item中定义FixedUpdate 方法，因为这样容易控制顺序
@@ -193,10 +208,6 @@ namespace Moba.Logic
             {
                 tm.Do(dt);
             }
-            //foreach (Item item in itemMap.Values)
-            //{
-            //    item.Do(dt);
-            //}
         }
 
         //private void LateUpdate()

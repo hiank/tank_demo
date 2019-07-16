@@ -35,6 +35,22 @@ namespace Moba.Logic
             //}
             //meet.DoMatch(match, activeScene);
             //Physics.autoSimulation = false;
+            Debug.Log("before connect called");
+            initWebsocket();
+            Debug.Log("after connect called");
+        }
+
+        async private void initWebsocket()
+        {
+
+            var client = Net.WsClient.Instance;
+            await client.ConnectAsync();
+
+
+            WarPb.S_War_Want want = new WarPb.S_War_Want();
+            want.Type = WarPb.War_Type.Teamwinner;
+
+            client.SendMessageAsync(want);           //NOTE: 发送身份
         }
 
         // Start is called before the first frame update
@@ -52,24 +68,24 @@ namespace Moba.Logic
 
             //EventFollow.Instance.Invoke(item.transform);
 
-            WarPb.War_Match match = new WarPb.War_Match();
-            ulong uid = 1;
-            for (int i = 0; i < 2; i++)
-            {
-                WarPb.Team team = new WarPb.Team();
-                for (int n = 0; n < 3; n++)
-                {
-                    MasterPb.Role role = new MasterPb.Role();
-                    role.ModelId = n;
-                    role.Uid = uid++;
-                    team.Roles.Add(role);
-                }
-                match.League.Add(team);
-            }
+            //WarPb.War_Match match = new WarPb.War_Match();
+            //ulong uid = 1;
+            //for (int i = 0; i < 2; i++)
+            //{
+            //    WarPb.Team team = new WarPb.Team();
+            //    for (int n = 0; n < 3; n++)
+            //    {
+            //        MasterPb.Role role = new MasterPb.Role();
+            //        role.ModelId = n;
+            //        role.Uid = uid++;
+            //        team.Roles.Add(role);
+            //    }
+            //    match.League.Add(team);
+            //}
 
-            var any = Google.Protobuf.WellKnownTypes.Any.Pack(match);
+            //var any = Google.Protobuf.WellKnownTypes.Any.Pack(match);
 
-            EventNet.Instance.Get(Google.Protobuf.WellKnownTypes.Any.GetTypeName(any.TypeUrl)).Invoke(any);
+            //EventNet.Instance.Get(Google.Protobuf.WellKnownTypes.Any.GetTypeName(any.TypeUrl)).Invoke(any);
 
         }
 
@@ -154,6 +170,8 @@ namespace Moba.Logic
             }
             GameObject plane = Instantiate(prefab);
             SceneManager.MoveGameObjectToScene(plane, gameObject.scene);
+
+            Net.WsClient.Instance.ID = match.Id;
 
             //plane.GetComponent<Views.PlaneManager>().DoMatch(match);
             var pm = plane.GetComponent<PlaneManager>();

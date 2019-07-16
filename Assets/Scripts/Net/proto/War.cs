@@ -207,7 +207,7 @@ namespace WarPb {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 8: {
-            type_ = (global::WarPb.War_Type) input.ReadEnum();
+            Type = (global::WarPb.War_Type) input.ReadEnum();
             break;
           }
         }
@@ -356,7 +356,7 @@ namespace WarPb {
       }
       if (other.action_ != null) {
         if (action_ == null) {
-          action_ = new global::Google.Protobuf.WellKnownTypes.Any();
+          Action = new global::Google.Protobuf.WellKnownTypes.Any();
         }
         Action.MergeFrom(other.Action);
       }
@@ -377,9 +377,9 @@ namespace WarPb {
           }
           case 18: {
             if (action_ == null) {
-              action_ = new global::Google.Protobuf.WellKnownTypes.Any();
+              Action = new global::Google.Protobuf.WellKnownTypes.Any();
             }
-            input.ReadMessage(action_);
+            input.ReadMessage(Action);
             break;
           }
         }
@@ -1193,7 +1193,7 @@ namespace WarPb {
       }
       if (other.speed_ != null) {
         if (speed_ == null) {
-          speed_ = new global::WarPb.DecimalVector3();
+          Speed = new global::WarPb.DecimalVector3();
         }
         Speed.MergeFrom(other.Speed);
       }
@@ -1214,9 +1214,9 @@ namespace WarPb {
           }
           case 18: {
             if (speed_ == null) {
-              speed_ = new global::WarPb.DecimalVector3();
+              Speed = new global::WarPb.DecimalVector3();
             }
-            input.ReadMessage(speed_);
+            input.ReadMessage(Speed);
             break;
           }
         }
@@ -1392,7 +1392,7 @@ namespace WarPb {
       }
       if (other.point_ != null) {
         if (point_ == null) {
-          point_ = new global::WarPb.DecimalVector3();
+          Point = new global::WarPb.DecimalVector3();
         }
         Point.MergeFrom(other.Point);
       }
@@ -1417,9 +1417,9 @@ namespace WarPb {
           }
           case 26: {
             if (point_ == null) {
-              point_ = new global::WarPb.DecimalVector3();
+              Point = new global::WarPb.DecimalVector3();
             }
-            input.ReadMessage(point_);
+            input.ReadMessage(Point);
             break;
           }
         }

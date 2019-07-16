@@ -19,13 +19,13 @@ namespace Moba.Net
             {
                 case EventInteractionTick.TYPE.MOVE:
                     WarPb.Move move = new WarPb.Move();
-                    move.Uid = 1;
+                    move.Uid = 2002;
                     move.Speed = v;
                     action = move;
                     break;
                 case EventInteractionTick.TYPE.SHOOT:
                     WarPb.Shoot shoot = new WarPb.Shoot();
-                    shoot.Uid = 1;
+                    shoot.Uid = 2002;
                     shoot.Super = false;
                     shoot.Point = v;
                     action = shoot;

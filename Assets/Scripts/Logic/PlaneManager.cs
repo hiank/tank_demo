@@ -43,7 +43,7 @@ namespace Moba.Logic
             //        break;
             //    }
             //}
-            TankManager tm = m_Meet.GetTM(1);
+            TankManager tm = m_Meet.GetTM(2002);
             if (null != tm)
                 Look = tm.m_Instance.transform;
         }
