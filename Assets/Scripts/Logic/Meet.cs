@@ -27,6 +27,10 @@ namespace Moba.Logic
 
         private int netTickIndex = 0;               //NOTE: 当前的服务器演算帧索引
 
+        private int leftSimularTimes = 0;
+
+        private WarPb.Tick curTick = null;
+        private int fixedIdx = 0;
         //private Dictionary<ulong, int> tagDic;     //NOTE: uid 转场景tag 
         //private Dictionary<ulong, Item> itemMap; //NOTE: 通过uid 获得Item
 
@@ -74,17 +78,18 @@ namespace Moba.Logic
                     idx++;
                 }
             }
+            Physics.IgnoreLayerCollision(9, 9);
         }
 
         //DoTick 处理tick，将对演示状态进行一定修正，所有的碰撞都在此处发生响应
         public void DoNetTick(WarPb.Tick tick)
         {
-            Debug.Log("tickIndex : " + tick.Index.ToString() + "...netTickIndex : " + netTickIndex);
+            //Debug.Log("tickIndex : " + tick.Index.ToString() + "...netTickIndex : " + netTickIndex);
 
             if (tick.Index <= netTickIndex)             //NOTE: 收到的重复帧，直接丢弃
                 return;
 
-            if (tick.Index > (netTickIndex + 1))        //NOTE: 错帧，加到错帧列表中
+            if (leftSimularTimes > 0 || (tick.Index > (netTickIndex + 1)))        //NOTE: 错帧，加到错帧列表中
             {
                 InsertToList(laterTicks, tick);
                 return;
@@ -92,17 +97,18 @@ namespace Moba.Logic
 
             netTickIndex++;
             //NOTE: 此处要处理 NetTick 与 LocalTick 相同的情况，此情况下 shotUpdated 为false
+            //DoTick(tick);
+
+            //while (laterTicks.Count > 0)
+            //{
+            //    if (laterTicks[0].Index > (netTickIndex + 1))
+            //        break;
+
+            //    netTickIndex++;
+            //    DoTick(laterTicks[0]);
+            //    laterTicks.RemoveAt(0);
+            //}
             DoTick(tick);
-
-            while (laterTicks.Count > 0)
-            {
-                if (laterTicks[0].Index > (netTickIndex + 1))
-                    break;
-
-                netTickIndex++;
-                DoTick(laterTicks[0]);
-                laterTicks.RemoveAt(0);
-            }
         }
 
         //DoLocalTick 响应本地tick，融合修正 
@@ -171,7 +177,7 @@ namespace Moba.Logic
 
         private void DoTick(WarPb.Tick tick)
         {
-
+            //Debug.Log("do tick index : " + tick.Index);
             if (tick.Actions.Count > 0)
             {
                 foreach (var any in tick.Actions)
@@ -199,15 +205,40 @@ namespace Moba.Logic
             //{
             //    tm.Do(0.06f);
             //}
+            //Physics.defaultPhysicsScene.Simulate(0.06f);
+            leftSimularTimes = 3;
+            curTick = tick;
         }
 
         //Fixed 每次Fixed 调用一次，使用这个方法调用而不是使用Item中定义FixedUpdate 方法，因为这样容易控制顺序
         public void Fixed(float dt)
         {
-            foreach (var tm in m_Tanks)
+            if (leftSimularTimes > 0)
             {
-                tm.Do(dt);
+                string infoStr = "";
+                infoStr += "__x:" + m_Tanks[0].m_Instance.transform.position.x + " y:" + m_Tanks[0].m_Instance.transform.position.y + " z:" + m_Tanks[0].m_Instance.transform.position.z + "|";
+                foreach (var tm in m_Tanks)
+                {
+                    tm.Do(dt);
+                }
+                Debug.Log("" + curTick.Index + infoStr);
+                Physics.defaultPhysicsScene.Simulate(dt);
+                leftSimularTimes--;
+
+                if ((leftSimularTimes == 0) && (laterTicks.Count > 0))
+                {
+                    if (laterTicks[0].Index == (netTickIndex + 1))
+                    {
+                        netTickIndex++;
+                        DoTick(laterTicks[0]);
+                        laterTicks.RemoveAt(0);
+                    }
+                }
             }
+            //foreach (var tm in m_Tanks)
+            //{
+            //    tm.Do(dt);
+            //}
         }
 
         //private void LateUpdate()

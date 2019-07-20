@@ -21,7 +21,7 @@ namespace Moba.Net
         public WsConn()
         {
             client = new ClientWebSocket();
-            uri = new Uri("ws://192.168.137.222:30250/ws");
+            uri = new Uri("ws://localhost:8022/ws");
             client.Options.SetRequestHeader("Token", "2002");
             cancelActionToken = new System.Threading.CancellationToken();
             interactionCall = new UnityAction<EventInteractionTick>(handleInteractionTick);
@@ -69,16 +69,43 @@ namespace Moba.Net
             var arr = new ArraySegment<byte>(new byte[512]);
             while (true)
             {
-                arr.Array.Initialize();
-                WebSocketReceiveResult rlt = await client.ReceiveAsync(arr, cancelActionToken);
-                if (rlt.CloseStatus != null && rlt.CloseStatus != WebSocketCloseStatus.Empty)
+                //arr.Array.Initialize();
+                byte[] buff = null;
+                int cnt = 0;
+                while (true)
+                {
+                    WebSocketReceiveResult rlt = await client.ReceiveAsync(arr, cancelActionToken);
+                    if (rlt.CloseStatus != null && rlt.CloseStatus != WebSocketCloseStatus.Empty)
+                    {
+                        cnt = 0;
+                        break;
+                    }
+                    if (rlt.EndOfMessage && cnt == 0)
+                    {
+                        buff = arr.Array;
+                        cnt = rlt.Count;
+                        break;
+                    }
+
+                    var s = new MemoryStream();
+                    if (buff != null)
+                    {
+                        s.Write(buff, 0, buff.Length);
+                    }
+                    s.Write(arr.Array, 0, rlt.Count);
+                    buff = s.ToArray();
+                    cnt += rlt.Count;
+                    if (rlt.EndOfMessage)
+                        break;
+                }
+                if (cnt == 0)
                     break;
 
-
+                Debug.Log("recv len : " + cnt);
                 //NOTE: 此处缺乏错误处理
-                var any = Google.Protobuf.WellKnownTypes.Any.Parser.ParseFrom(arr.Array, 0, rlt.Count);
+                var any = Google.Protobuf.WellKnownTypes.Any.Parser.ParseFrom(buff, 0, cnt);
                 string typeName = Google.Protobuf.WellKnownTypes.Any.GetTypeName(any.TypeUrl);
-                Debug.Log("recv:" + typeName);
+                //Debug.Log("recv:" + typeName);
                 EventNet.Instance.Get(typeName).Invoke(any);
             }
         }
